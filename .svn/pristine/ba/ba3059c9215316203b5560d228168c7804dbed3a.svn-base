@@ -1,0 +1,38 @@
+## IMPORTS
+import(methods)
+import(aCGH)
+import(stats)
+import(utils)
+import(graphics)
+import(plyr)
+import(DNAcopy)
+import(lattice)
+import(ggplot2)
+import(grid)
+import(shiny)
+import(org.Hs.eg.db)
+import(TxDb.Hsapiens.UCSC.hg18.knownGene)
+import(TxDb.Hsapiens.UCSC.hg19.knownGene)
+import(TxDb.Hsapiens.UCSC.hg38.knownGene)
+import(SNPlocs.Hsapiens.dbSNP144.GRCh37)
+import(GenomeInfoDb)
+import(GenomicRanges)
+import(GenomicFeatures)
+import(AnnotationDbi)
+import(BSgenome)
+
+
+## IMPORTS FROM
+importFrom("limma", "loessFit")
+importFrom("affy", "tukey.biweight")
+importFrom("mclust", "Mclust")
+importFrom("mclust", "mclustBIC")
+importFrom("parallel", "mclapply")
+importFrom("parallel", "detectCores")
+importFrom("IRanges", "IRanges")
+importFrom("grDevices", "rgb")
+
+
+## EXPORT METHODS
+exportPattern("^[[:alpha:]]+")
+

@@ -1,0 +1,31 @@
+## IMPORTS
+import(methods)
+import(plyr)
+import(DNAcopy)
+import(lattice)
+import(aCGH)
+import(ggplot2)
+import(grid)
+import(shiny)
+import(RUnit)
+import(BiocGenerics)
+import(org.Hs.eg.db)
+import(TxDb.Hsapiens.UCSC.hg19.knownGene)
+import(GenomeInfoDb)
+import(GenomicRanges)
+import(GenomicFeatures)
+import(AnnotationDbi)
+
+
+## IMPORTS FROM
+importFrom(limma, loessFit)
+importFrom(affy, tukey.biweight)
+importFrom(mclust, Mclust)
+importFrom(mclust, mclustBIC)
+importFrom(parallel, mclapply)
+importFrom(parallel, detectCores)
+
+
+## EXPORT METHODS
+exportPattern("^[[:alpha:]]+")
+

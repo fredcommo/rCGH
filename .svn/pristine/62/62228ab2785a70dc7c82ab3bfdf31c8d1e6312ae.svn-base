@@ -1,0 +1,100 @@
+R News
+
+
+rCGH package 1.0.1
+-----------------------
+
+BUG FIXES
+    * Major bug fixed in the view() function: one function was not properly called.
+
+
+
+rCGH package 0.99.10
+-----------------------
+
+BUG FIXES
+    * In byGeneTable(): errors may occured when genes were searched
+    on too short segments.
+
+
+
+rCGH package 0.99.9
+-----------------------
+
+BUG FIXES
+    * In view() function: segment colors were not properly assigned.
+
+
+
+rCGH package 0.99.8
+-----------------------
+
+BUG FIXES
+	* Error when merging probes with duplicated locations on
+    Agilent CytoGenomics 3.0: fixed.
+
+
+
+rCGH package 0.99.7
+-----------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    * byGeneTable() is not a S4 method anymore but S3: as argument, it takes a
+    segmentation table exported from a rCGH object, and not the object itself.
+    As a consequence, byGeneTable() can be used on any segmentation table of the
+    same form as those exported from a rCGH object.
+
+    * The full by-gene table is not stored in rCGH object, but built then
+    exported on the fly, using byGeneTable().
+    
+    * Supplementary argument in getSegTable(): minLen allows the user to
+    specify the minimal segment length, in Kb. Segments shorter than this value
+    are merged before the segmentation table is exported. The original table is
+    still stored in the rCGH object.
+    
+    * New features in plotProfile() and multiplot(): one or multiple genes can
+    be tagged. As for getSegTable(), the minimal segment length (in Kb) can be
+    specified.
+
+    * Server version for the interactive viewer is described in the vignette.
+
+BUG FIXES
+    * byGeneTable:
+        . In the exported by-gene table, the corresponding segment lengths were
+        not properly reported.
+
+        . Errors occured when a gene was covered by 2 segments.
+
+
+rCGH package 0.99.6
+-----------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    * New cytoScan example file
+    * Updated vignette
+    * The rCGH version used is stored in rCGH objects for traceability
+
+NON-VISIBLE CHANGES
+	* Supplementary unittests
+
+
+
+rCGH package 0.99.5
+-----------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    * R-3.2.1 is the minimal required version
+
+
+
+rCGH package 0.99.4: First release!
+-----------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    * No changes
+
+NEW FEATURES
+    * New package
+
+BUG FIXES
+    * No changes classified as 'bug fixes' (package under active development)

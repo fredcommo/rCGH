@@ -1,0 +1,499 @@
+%\VignetteEngine{knitr::knitr}
+%%\VignetteIndexEntry{using rCGH package}
+
+%\documentclass{article}
+\documentclass[12pt]{article}
+
+% Packages
+\usepackage{a4wide}
+\usepackage[utf8]{inputenc}
+
+% graphics path
+
+% References
+\begin{filecontents*}{rcgh.bib}
+@article{Commo,
+    author = {F, Commo and C, Ferte and JC, Soria and 
+    SH, Friend and F, Andre and J, Guinney},
+    title = {Impact of centralization on aCGH-based genomic profiles for 
+    precision medicine in oncology},
+    year = {2014},
+    journal = {Ann Oncol.}
+}
+@article{Venkatraman,
+    author = {ES, Venkatraman and AB, Olshen},
+    title = {A faster circular binary segmentation algorithm for the analysis 
+    of array CGH data},
+    year = {2007},
+    journal = {Bioinformatics},
+    volume = {15},
+    number = {23},
+    pages = {657--663}
+}
+@article{Mermel,
+    author = {CH, Mermel and SE, Schumacher and B, Hill and ML, Meyerson and 
+    R, Beroukhim and G, Getz},
+    title = {GISTIC2.0 facilitates sensitive and confident localization of the 
+    targets of focal somatic copy-number alteration in human cancers},
+    year = {2011},
+    journal = {Genome Biology},
+    volume = {12},
+    number = {4},
+    pages = {R41}
+}
+@article{Smyth,
+    author = {GK, Smyth and TP, Speed},
+    title = {Normalization of cDNA microarray data},
+    journal = {Methods},
+    year = {2003},
+    volume = {31},
+    number = {},
+    pages = {265--273},
+    url = {http://www.statsci.org/smyth/pubs/normalize.pdf}
+}
+@misc{Affy,
+    url = {http://www.affymetrix.com/estore/partners_programs/programs/developer/tools/powertools.affx}
+}
+@Manual{dnacopy,
+    author = {Venkatraman E. Seshan and Adam Olshen},
+    title = {DNAcopy: DNA copy number data analysis},
+    year = {},
+    journal = {},
+    note = {R package version 1.40.0},
+}
+\end{filecontents*}
+
+% Authors
+\author{Frederic Commo \footnote{frederic.commo@gustaveroussy.fr}\\
+    Inserm U981, Bioinformatics Group, Gustave Roussy, France
+    }
+
+%BiocStyle settings
+<<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
+BiocStyle::latex()
+@
+
+% Title
+\bioctitle[rCGH package]{
+Comprehensive Pipeline for Analyzing and Visualizing 
+Agilent and Affymetrix Array-Based CGH Data
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+
+% knitr chunk setup
+<<setup, include=FALSE>>=
+options(width = 80)
+require(knitr)
+opts_chunk$set(dev='png', prompt=TRUE, comment=NA, tidy=FALSE)
+@
+
+
+\section{Introduction}
+Genomic profiling using array-based comparative genomic hybridization (aCGH) is 
+widely used within precision medicine programs, in combination with DNA 
+sequencing, to match specific molecular alterations (amplifications or 
+deletions) with therapeutic orientations.\\
+We present \Rpackage{rCGH}, a comprehensive array-based CGH analysis workflow,
+integrating functionalities specifically designed for precision medicine. 
+\Rpackage{rCGH} ensures a full traceability by saving all the process parameters
+, and facilitates genomic profiles interpretation and decision-making through 
+interactive visualizations.\\
+\Rpackage{rCGH} supports Agilent (from 44K to 400K arrays), as well as
+Affymetrix, SNP6 and cytoScanHD arrays.
+
+\incfig[h]{workflowOverview.pdf}{.5\textwidth}{\Rpackage{rCGH workflow.}}
+{The global rCGH analysis workflow}
+
+\section{\Rpackage{rCGH} object structure}
+In order to store (or update) data, sample information, and the workflow
+parameters all along a genomic profile analysis process, \Robject{rCGH} objects
+are structured as follow:
+
+\begin{itemize}
+    \item{info}: the sample information.
+    \item{cnSet}: the full by-probe dataset.
+    \item{param}: the workflow parameters, for traceability.
+    \item{segTable}: the segmentation data.
+\end{itemize}
+
+All these slots are accessible through specific functions, as described in the
+next sections.
+\\
+Notice that \Rclass{rCGH} is a superclass designed for calling common methods.
+Depending on the type of array and the \emph{read} functions used, the 
+resulting objects will be assigned to classes \Rclass{rCGH-Agilent}, 
+\Rclass{rCGH-SNP6}, or \Rclass{rCGH-cytoScan}. These classes inherit from the 
+superclass, and allow array-specific pre-parametrizations.
+
+
+\section{\Rpackage{rCGH} functions}
+\Rpackage{rCGH} provides functions for each of the analysis steps, from reading 
+files to visualizing genomic profiles. Several \emph{get} functions allow the 
+user to get access to specific results and workflow parameters, saved and stored
+at each step.
+
+\subsection{Reading files}
+Both Agilent Feature Exraction files (from 44K to 400K arrays), and Affymetrix 
+SNP6 and cytoScanHD, data are supported.\\
+However, and to keep more flexibility, Affymetrix CEL files have to be first
+read using ChAS or Affymetrix Power Tools (APT) \cite{Affy}, and then exported
+as cychp.txt or cnchp.txt files.\\
+Notice that cnchp.txt files contain Allelic differences, that allow the loss of
+heterozygosity (LOH) to be estimated, while cychp.txt files do not.
+
+Due to specific files structures, and since preambles may be missing (depending
+on ChAS and APT versions), \Rpackage{rCGH} as 3 specific read/build-object
+functions:
+
+\begin{itemize}
+    \item{\Rfunction{readAgilent()}}: 44K to 400K FE (.txt) files.
+    \item{\Rfunction{readAffySNP6()}}: cychp, cnchp and probeset (.txt) files,
+    exported from SNP6.0 CEL.
+    \item{\Rfunction{readAffyCytoScan()}}: cychp, cnchp and probeset (.txt)
+    files, exported from CytoScanHD CEL.
+\end{itemize}
+
+Each of these functions take the file's path as the unique mandatory argument.\\
+Optional arguments allow the user to save the following information: 
+\emph{sampleName, labName}:
+
+\vspace{5mm}
+
+<<readFiles, warning=FALSE, message=FALSE>>=
+library(rCGH)
+filePath <- system.file("extdata", "Affy_cytoScan.cyhd.CN5.CNCHP.txt.bz2",
+    package = "rCGH")
+cgh <- readAffyCytoScan(filePath, sampleName = "CSc-Example",
+                        labName = "myLab")
+@
+
+<<cgh, warning=FALSE, message=FALSE>>=
+cgh
+@
+
+In complement, any kind of useful annotation (logical, string or numeric) can be
+added, with \Rfunction{setInfo()}:
+
+\vspace{5mm}
+
+<<addInfo>>=
+setInfo(cgh, "item1") <- 35
+setInfo(cgh, "item2") <- TRUE
+setInfo(cgh, "item3") <- "someComment"
+@
+
+At any time, the full (or specific) annotations stored can be accessed:
+
+\vspace{5mm}
+
+<<getInfo>>=
+getInfo(cgh)
+getInfo(cgh, c("item1", "item3"))
+@
+
+
+\subsection{Adjusting signals}
+When Agilent dual-color hybridization are used, GC content and the cy3/cy5 bias 
+are necessary adjustments.  \Rfunction{adjustSignal()} handle these steps 
+before computing the $\log_2\left( Relative Ratios \right)$ (LRR). In both 
+cases, a local regression (\Rfunction{loessFit}, R package \Rpackage{limma})
+is used \cite{Smyth}.
+\\
+Note that by default, the cyanine3 signal is used as the reference. Use 
+\Rcode{Ref=cy5} if cyanine5 signal has to be used as the reference.
+\\
+When Affymetrix cychp or cnchp files are used, these steps have already been 
+done, and \Rfunction{adjustSignal()} simply rescale the LRR, when
+\Rcode{Scale=TRUE} (default). As for Agilent data, some useful quality 
+scores: the derivative Log Ratio Spread (dLRs) and the LRR Median Absolute 
+Deviation (MAD), are stored in the object.
+
+\vspace{5mm}
+
+<<adjustSignal>>=
+cgh <- adjustSignal(cgh, nCores=1)
+@
+
+
+\subsection{Centering LRR}
+Centering LRR is a key step in the genomic analysis process since it defines 
+the base line (the expected 2-copies level) from where gains ad losses are
+estimated. To do so, LRRs are considered as a mixture of several gaussian
+populations , and an expectation-maximization (EM) algorithm is used to 
+estimate their parameters.
+\\
+The centralization value is chosen according to the user specification: the mean
+of the sub-population with a density peak higher than a given proportion of the
+highest density peak \cite{Commo}. The default value is 0.5. Setting
+\Rcode{peakThresh = 1} leads to choose the highest density peak.
+\\
+The \Rfunction{plotDensity()} function gives access to a graphical check on how 
+the centralization step worked, and what LRR population has been chosen for 
+centering the profile:
+
+\vspace{5mm}
+
+<<EMnormalize>>=
+# Resricted to 3 groups for the purpose of that demo.
+cgh <- EMnormalize(cgh, G = 3)
+@
+
+\vspace{5mm}
+
+<<plotDensity, fig.width=7, fig.height=5, fig.show='hide'>>=
+plotDensity(cgh)
+@
+
+\incfig[h]{figure/plotDensity-1}{.75\textwidth}{plotDensity.}
+{\Rfunction{plotDensity()} shows how \emph{EM} models the \emph{LRR}
+distribution, and what peak is chosen for centralizing the profile (in bold).}
+
+
+\subsection{Segmenting}
+One possible strategy for segmenting the genome profile consists in identifying 
+breakpoints all along the genome, when exist. These breakpoints define the DNA 
+segments start and end positions. To do so, \Rpackage{rCGH} uses the Circular 
+Binary Segmentation algorithm (\emph{CBS}) \cite{Venkatraman} from the 
+\Rpackage{DNAcopy} package \cite{dnacopy}.
+\\
+All the steps are wrapped into one unique easy-to-use function,
+\Rfunction{segmentCGH()}. In order to faclitate its use, all the parameters but
+one are predefined: \Rcode{UndoSD} is kept free. When this parameter is set to
+\Rcode{NULL} (default), its optimal value is estimated directly from the values.
+However, the user can specify its own value, generaly from 0.5 to 1.5.\\
+The resulting segmentation table is of the form of a standard
+\Rpackage{DNAcopy} output, plus additional columns:
+
+\begin{itemize}
+    \item{ID} : sample Id.
+    \item{chrom}   : chromosome number.
+    \item{loc.start}  : segment start position.
+    \item{loc.end}  : segment end position.
+    \item{num.mark} : number of markers within each segment.
+    \item{seg.mean} : the mean LRR along each segment.
+    \item{seg.med}  : the median LRR along each segment.
+    \item{probes.Sd} : the LRR standard deviation along each segment.
+\end{itemize}
+
+\vspace{5mm}
+
+<<SegmentCGH>>=
+cgh <- segmentCGH(cgh, nCores=1)
+segTable <- getSegTable(cgh)
+head(segTable)
+@
+
+Note that such data format allows GISTIC-compatible inputs to be exported
+\cite{Mermel}.
+
+
+\subsection{Parallelization}
+\Rpackage{rCGH} allows parallelization within \Rfunction{EMnormalise()} and
+\Rfunction{segmentCGH()}, through \Rfunction{mclapply()} from R package
+\Rpackage{parallel}.\\
+By default, \Rcode{nCores} will be set to half of the available cores, but any
+value, from 1 to \Rfunction{detectCores()}, is allowed. However, this feature
+is currently only available on \texttt{Linux} and \texttt{OSX}: \Rcode{nCores}
+will be automatically set to 1 when a \texttt{Windows} system is detected.
+
+
+\subsection{Getting the by-gene table}
+The next step consists in getting access to the potentially altered genes. 
+\Rfunction{byGeneTable()} extracts the list of genes included in each segment, 
+and constructs a dataset, easy to export and to manipulate outside R.
+The final genes' list combines position information from  
+\Biocannopkg{TxDb.Hsapiens.UCSC.hg19.knownGene}, and annotations from
+\Biocannopkg{org.Hs.eg.db}.
+
+\vspace{5mm}
+
+<<byGeneTable>>=
+#geneTable <- byGeneTable(cgh)
+geneTable <- byGeneTable(segTable)
+head(geneTable, n=3)
+@
+
+
+\subsection{Accessing the analysis parameters}
+For traceability and reproducibility, it may be useful to keep track to a
+profile analysis parameters. At each step, the workflow parameters, defined by
+default or specified by the user, are stored in a \Rcode{params} slot. 
+They are accessible at any time using \Rfunction{getParam()}.
+
+\vspace{5mm}
+
+<<getParams>>=
+getParam(cgh)[1:3]
+@
+
+
+\subsection{Visualizing the genomic profile}
+In a context of Precision Medicine, visualizing and manipulating a genomic 
+profile is crucial to interpret imbalances, to identify targetable genes, and 
+to make decisions regarding a potential therapeutic orientation.
+In many situations, considering LOH can also help to better interpret
+imbalances.
+\\
+\Rpackage{rCGH} provides 2 ways for visualizing a genomic profile: 
+\Rfunction{plotProfile()}, \Rfunction{plotLOH()} and \Rfunction{multiplot()} are
+simple static ways to visualize a profile, possibly with some tagged gene,
+while \Rfunction{view()} is a more sophisticated and interactive visualization
+method, build on top of shiny. A control panel allows the user to interact with
+the profile, and to export the results.
+\\
+Notice that \Rfunction{plotLOH()} and \Rfunction{multiplot()} are relevant only
+in case the allelic difference is available, namely when Affymetrix cnchp.txt
+files are used.
+
+
+\subsubsection{Static profile visualizations}
+\Rfunction{plotProfile()} allows the genomic profile visualization. Any gene(s)
+of interest can be added to the plot by passing a valid HUGO symbol.
+Other arguments can be used to color the segments according to specified
+gain/loss thresholds, or to change the plot title.
+\\
+Two other static functions can be useful for reporting alterations:
+\Rfunction{plotLOH()} to analyse the LOH, and \Rfunction{multiplot()} to build 
+a full report, including both the genomic profile and the LOH.
+
+\vspace{5mm}
+
+<<getProfile, fig.width=7.5, fig.height=7, fig.show='hide'>>=
+multiplot(cgh, c("egfr", "erbb2"))
+@
+
+\pagebreak
+
+\incfig[h]{figure/getProfile-1}{.95\textwidth}{Static views.}
+{
+\Rfunction{multiplot()} provides static visualisations combining the genomic
+profile and the LOH.
+}
+
+\pagebreak
+
+\subsubsection{Recentering}
+When the profile centering doesn't seem appropriate, \Rfunction{recenter()}
+allows the user to choose another centralization value. The new choice
+has to be specified as the peak index to use: peaks are indexed, from 1 to k (
+from left to right) as they appear on the density plot.
+
+\vspace{5mm}
+
+<<recenter, fig.width=7.5, fig.height=4, fig.show='hide'>>=
+# Recentering on peak #3
+recenter(cgh) <- 3
+plotProfile(cgh, "erbb2")
+@
+
+\incfig[h]{figure/recenter-1}{.95\textwidth}{Recentering.}
+{
+By default, the EM-based normalization choose a possibly optimal peak to 
+center the profile, but any other peak can be chosen, using
+\Rfunction{recenter()}.
+}
+
+
+\subsubsection{Interactive visualization}
+The \Rpackage{view()} function provides a more flexible way for analyzing a 
+genomic profile, and allows interactive graph manipulations through a 
+control panel: defining the gain/loss thresholds, displaying a gene, resizing 
+the y-axis, selecting one unique chromosome, and recentering the entire profile.
+Note that the \emph{Genes table} is updated whenever changes are made through 
+that control panel, e.g. selecting one unique chromosome on the graph filters
+the \emph{Genes table} on that chromosome, simultaneously.
+\\
+The Download buttons, \emph{Plot}, \emph{LOH} and \emph{Table}, allow plots and
+gene table to be exported, as they have been modified.
+
+\pagebreak
+
+The \Rfunction{view()} control panel:
+\begin{itemize}
+    \item{Gene Symbol} : display any existing gene, providing its official 
+    HUGO symbol.
+    \item{Show chromosome} : display the entire profile (default is 'All'),
+    or one specific chromosome.
+    \item{Gain/Loss colors} : choose blue/red or red/blue.
+    \item{Recenter profile} : recenter the profile on-the-fly. Gene values
+    are updated in the 'Genes table'.
+    \item{Merge segments...} : merge segments shorter than the specified
+    value, in Kb. Gene values are updated in the 'Genes table'.
+    \item{Recenter profile} : recenter the profile on-the-fly. Gene values
+    are updated in the 'Genes table'.
+    \item{Rescale max(y)} : adjust the top y-axis (0<y) using a proportion 
+    of the maximum value.
+    \item{Rescale min(y)} : adjust the bottom y-axis (y<0) using a 
+    proportion of the minimum value.
+    \item{Gain threshold (Log2ratio)} : define the gain threshold. 
+    Segments higher than this value are colored according to the chosen color
+    code, and the 'Genes table' is filtered, consequently.
+    \item{Loss threshold (Log2ratio)} : same as 'Gain threshold' but for 
+    losses.
+    \item{Download - Profile} : download the profile as it is displayed on the
+    screen, including modifications.
+    \item{Download - LOH} : download the LOH plot as it is displayed on the
+    screen, including modifications.
+    \item{Download - Table} : download the 'Genes table', including
+    modifications.
+\end{itemize}
+
+\vspace{5mm}
+
+<<view, eval=FALSE, echo=TRUE>>=
+view(cgh)
+@
+
+\incfig[h]{view.png}{.95\textwidth}{Interactive profile.}
+{
+The genomic profile is displayed in the first \emph{CGH profile} tab (left).
+Several changes can be applied using the control panel (in blue). The list of
+genes is accessible through the \emph{Genes table} tab (right). Both are updated
+simultaneously and can be exported, after modifications are applied.
+}
+
+\pagebreak
+
+\section{Notes regarding the example files}
+In order to reduce the computation time, we provide subsets of real data for
+the 3 supported platforms:
+
+\vspace{5mm}
+
+<<exampleFiles>>=
+list.files(system.file("extdata", package = "rCGH"))
+@
+
+\bioccomment{
+\\
+In order to speed up demos, the provided example files contain only a subset of
+the original probes.\\
+Affymetrix example files (cytoScan and SNP6) only contain SNP
+probes. Setting \Rcode{useProbes = "cn"} in \Rcode{readAffy} functions should
+return an error.
+}
+
+\section{Server version}
+A web browser version of the interactive visualization is available at\\
+\url{https://fredcommo.shinyapps.io/aCGH_viewer}\\
+As inputs, this application support the \Rpackage{rCGH} segmentation tables, or
+any segmentation table in the same format as the \Rpackage{CBS} outputs.
+\\
+For more details about this application, or to install it on your own server,
+please visit\\
+\url{https://github.com/fredcommo/aCGH_viewer}.
+
+\section{Session information}
+<<session>>=
+toLatex(sessionInfo())
+@
+
+\pagebreak
+
+\bibliography{rcgh}
+
+\end{document}
