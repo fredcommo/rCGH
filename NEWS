@@ -1,6 +1,30 @@
 R News
 
 
+rCGH 1.9.1
+-----------------------
+Minor changes
+    * Vignette formating in order to meet the guidelines of the
+    "Bioconductor LaTeX Style 2.0".
+
+
+rCGH 1.3.4
+-----------------------
+Major changes
+    * EMnormalize() has a new 'priorScale' argument (default to 5) to optimize 
+    the gaussian mixture analysis and the identification of the major L2Ratio
+    peaks.
+
+NEW FEATURES
+    * The rCGH package now supports Affymetrix OncoScan arrays. As for SNP6.0
+    and CytoScan arrays, CEL files must be processed by the user first, using
+    either ChAS or Affymetrix Power Tools. See ?readAffyOncoScan for more
+    details.
+
+
+rCGH 1.1.8 has been released as rCGH-1.2.2
+-----------------------
+
 rCGH 1.1.8
 -----------------------
 Major changes
@@ -15,7 +39,7 @@ NEW FEATURES
 
     * The read() functions, used as rCGH-Object constructors, take a
     supplementary 'ploidy' argument. When known, this value can be used in order
-    to estimate gains and losses expressed in copy numbers. Default is 2.
+    to estimate gains and losses expressed in copy numbers. Default to 2.
 
     * Copy number estimation is also reported in all of the tables, inlcuding
     the main by-probe table accesible through getCNset().

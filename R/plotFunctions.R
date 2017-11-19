@@ -167,19 +167,23 @@ setMethod(f="plotLOH",
             (HG$cumlen[ii-1] + HG$cumlen[ii])/2
         )
 
-        if(inherits(object, "rCGH-Illumina")){
-            values <- snpSet$Allele.Difference
-        } else{
-            values <- snpSet$modelAllDif
-            }
+        # if(inherits(object, "rCGH-Illumina")){
+        #     values <- snpSet$Allele.Difference
+        # } else{
+        #     values <- snpSet$modelAllDif
+        #     }
 
-        idx <- sample(1:length(values), min(length(values), 50e3))
-        X <- data.frame(loc=gLocs[idx], AD=values[idx])
-        
+        idx <- sample(1:nrow(snpSet), min(nrow(snpSet), 50e3))
+        X <- data.frame(loc = gLocs[idx],
+                        AD = snpSet$Allele.Difference[idx],
+                        adjAD = snpSet$modelAllDif[idx]
+                        )
+        # Main plot
         cumCentr <- 1/2*HG$length + HG$cumlen
         gPlot <- ggplot(data = X, aes_string(x="loc", y="AD")) +
-            geom_point(pch = 19, cex = 0.2, col = rgb(0,0,0,.75)) +
-            geom_hline(yintercept = 0) +
+            geom_point(pch = 19, cex = 0.1, color = rgb(0.4, 1, 1, .1)) +
+            geom_point(aes_string(y = "adjAD"),
+                pch = 19, cex = 0.2, color = rgb(0,0,0,.75)) +
             geom_hline(yintercept = c(-1, 1),
                 color = "blue", linetype=2) +
             geom_hline(yintercept = seq(-1.5, 1.5, by = 1),
@@ -210,7 +214,7 @@ setMethod(f="plotLOH",
                             x = c(-1e8, cumCentr[1:23]), y = rep(1.20, 24),
                             label = c("Chr", seq(1, 23)),
                             size = 4, colour = "grey30")
-            }else{
+            } else {
                 gPlot <- gPlot +
                         coord_cartesian(ylim = range(-1.99, 1.99)) +
                         scale_y_continuous(breaks = seq(-1.5, 1.5, by = 0.5)) +

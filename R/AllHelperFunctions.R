@@ -615,7 +615,16 @@
     xprim <- x[ii]
     
     # optimG <- .optimalG(xprim, G)
-    model <- Mclust(xprim, G = G)
+    minx <- min(x)
+    maxx <- max(x)
+    
+    model <- Mclust(xprim, G = G,
+                    prior = priorControl(
+                        scale = rep(sd(x, na.rm = TRUE)/max(G), max(G)),
+                        mean = seq(minx, maxx, len = max(G))
+                        )
+    )
+
     K <- model$classification
     N <- as.numeric(table(K))
     pars <- model$parameters
@@ -649,8 +658,9 @@
     maxx <- max(x)
     model <- Mclust(x, G = G,
         prior = priorControl(
-            scale = rep(sd(x, na.rm = TRUE), max(G)),
-            mean = seq(minx, maxx, len = max(G)))
+            scale = rep(sd(x, na.rm = TRUE)/max(G), max(G)),
+            mean = seq(minx, maxx, len = max(G))
+            )
         )
 
     K <- model$classification
@@ -658,16 +668,6 @@
     m <- pars$mean
     s2 <- pars$variance$sigmasq
     if(length(s2) < length(m)) s2 <- rep(s2, length(m))
-
-    # newx <- rnorm(length(x), 0, sd(x)*.9)
-    # for(k in unique(K)){
-    #     n <- sum(K == k)
-    #     if(!is.na(n) && n > 0){
-    #         newx[K==k] <- newx[K==k] + m[k]
-    #     }
-    # }
-
-    # return(newx)
 
     for(k in unique(K)){
         n <- sum(K == k)
@@ -691,13 +691,7 @@
             lr={.model <- .modelLR},
             loh={.model <- .modelLOH}
         )
-    
-    # alpha <- 2e3
-    # if(method == "loh"){
-    #     signal <- scale(signal, scale=FALSE)
-    #     alpha <- 2.5e3
-    # }
-    
+        
     ss <- split(signal, chr)
     
     # Force nCores to be 1 on windows
@@ -1333,18 +1327,6 @@
 
     X <- data.frame(loc = c(s, e), cp = c(m, M))
 
-
-    # if(M <= 10){
-    #     maxy <- M + 2
-    #     yticks <- seq(0, maxy, by = 2)
-    # } else if(M <= 20){
-    #     maxy <- M + 4
-    #     yticks <- seq(0, maxy, by = 4)
-    # } else{
-    #     maxy <- M + 5
-    #     yticks <- seq(0, maxy, by = 5)
-    # }
-
     maxy <- M + 2
     miny <- 0
     ylim <- range(miny, maxy)
@@ -1421,11 +1403,6 @@
         geom_point(data = bg, aes(x=genomeStart, y=Log2Ratio), size = 3,
                     color = "green")
 
-#     gPlot2 <- gPlot + 
-#         geom_point(data = bg, aes(x=genomeStart, y=Log2Ratio), size = 5) +
-#         geom_point(data = bg, aes(x=genomeStart, y=Log2Ratio), size = 3,
-#                    color = "red")
-
     gPlot2 <- gPlot2 + 
             annotate( 'text',
                     x = bg$genomeStart - 2.5e8,
@@ -1440,32 +1417,6 @@
 
     return(gPlot2)
 }
-
-
-# .addTagToPlot <- function(gPlot, bg){
-#     if(nrow(bg) == 0){
-#         message("No gene information available.")
-#         return(gPlot)
-#     }
-
-#     genomeStart <- Log2Ratio <- NULL
-
-#     ylim <- max(gPlot$coordinates$limits$y)
-#     gPlot2 <- gPlot + 
-#         geom_point(data = bg, aes(x=genomeStart, y=Log2Ratio), size = 5) +
-#         geom_point(data = bg, aes(x=genomeStart, y=Log2Ratio), size = 3,
-#             color = "red") +
-#         annotate( 'text',
-#             x = bg$genomeStart,
-#             y = ifelse(bg$Log2Ratio+1<ylim, bg$Log2Ratio+1, bg$Log2Ratio-1),
-#             label = sprintf("%s\nLog2R: %s", bg$symbol,
-#                 format(bg$Log2Ratio, digits=2)
-#                 ),
-#             size = 7, colour = 'grey25'
-#         ) +
-#         theme(legend.position="none")
-#     return(gPlot2)
-# }
 
 ###############################################
 ## helpers called in view.R

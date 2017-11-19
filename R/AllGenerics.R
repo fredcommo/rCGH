@@ -24,7 +24,7 @@ setGeneric("segmentCGH",
     def=function(object, Smooth = TRUE, UndoSD = NULL, minLen = 10,
         nCores = NULL, verbose = TRUE) standardGeneric("segmentCGH"))
 setGeneric("EMnormalize",
-    def=function(object, G=2:6, peakThresh=0.5, mergeVal=0.1,
+    def=function(object, G=2:6, priorScale=5, peakThresh=0.5, mergeVal=0.1,
             Title=NA, verbose=TRUE) standardGeneric("EMnormalize"))
 setGeneric("plotDensity",
     def=function(object, breaks = NULL, Title = NULL,...)

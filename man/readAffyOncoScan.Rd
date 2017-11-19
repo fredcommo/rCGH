@@ -4,7 +4,7 @@
 \title{Affymetrix OncoScan \code{"\linkS4class{rCGH-oncoScan}"} Constructor}
 
 \description{
-A constructor function which takes an Affymetrix oncoScan .txt
+A constructor function which takes an Affymetrix oncoScan tabulated
 file as input, possibly in a compressed format (.bz2 or .gz).\cr
 This can be either a \code{'ProbeSets,CopyNumber.tsv'} alone, or merged with its
 corresponding \code{'ProbeSets,AllelicData.tsv'} file. See the \code{details} 
@@ -19,7 +19,7 @@ readAffyOncoScan(filePath, sampleName=NA, labName=NA,
 
 \arguments{
     \item{filePath}{
-    : string. A path to an Affymetrix cychp.txt (or cnchp.txt) file.
+    : string. A path to an Affymetrix .tsv file. See \code{details}.
     }
     \item{sampleName}{
     : string. A sample Id. Optional.
@@ -41,8 +41,9 @@ readAffyOncoScan(filePath, sampleName=NA, labName=NA,
 }
 
 \details{
-Merging the \code{'ProbeSets,CopyNumber.tsv'} with the
-\code{'ProbeSets,AllelicData.tsv'} may produce a file containing both probes
+The Affymetrix Power Tools \code{apt-copynumber-onco-ssa} script produces 2
+files: \code{'ProbeSets,CopyNumber.tsv'} and \code{'ProbeSets,AllelicData.tsv'}.
+Merging these 2 files may produce a unique file containing both probes
 \code{Log2Ratio} and \code{AllelicDifference}. 
 }
 

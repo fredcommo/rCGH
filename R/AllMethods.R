@@ -23,9 +23,18 @@ setMethod(f="getParam",
 setMethod(f="getSegTable",
     signature="rCGH",
     definition=function(object, minLen = NULL){
+        
         segTable <- object@segTable
-        if(!is.null(minLen))
+
+        if(!is.null(minLen)){
             segTable <- .smoothSeg(segTable, minLen)
+        }
+
+        # In older versions 'estimCopy' might be missing
+        if(!"estimCopy" %in% colnames(segTable)){
+            segTable <- .estimateCopy(segTable)
+        }
+
         return(segTable)
         })
 
@@ -97,9 +106,8 @@ setMethod(f="adjustSignal",
                 signal <- cnSet$Allele.Difference
                 chr <- cnSet$ChrNum
                 S <- ifelse(inherits(object, "rCGH-oncoScan"), 0.05, 0.04)
-#                a <- ifelse(inherits(object, "rCGH-oncoScan"), 1e3, 2.5e3)
-                modelAllDif <- .modelSignal(signal, chr, G=1:7,
-                    method="loh", alpha=2.5e3, S, nCores, verbose)
+                modelAllDif <- .modelSignal(signal, chr, G = 2:5,
+                    method = "loh", alpha = 2.5e3, S, nCores, verbose)
                 cnSet$modelAllDif <- modelAllDif
             }
         }
@@ -187,8 +195,8 @@ setMethod(f="segmentCGH",
 
 setMethod(f="EMnormalize",
         signature="rCGH",
-        definition=function(object, G=2:6, peakThresh=0.5, mergeVal=0.1,
-            Title=NA, verbose=TRUE){
+        definition=function(object, G=2:6, priorScale = 5,
+            peakThresh=0.5, mergeVal=0.1, Title=NA, verbose=TRUE){
 
         if(!.validrCGHObject(object)) return(NULL)
 
@@ -201,7 +209,7 @@ setMethod(f="EMnormalize",
             stop("Please run the segmentation step before centralizing.")
         }
         simulLR <- .simulateLRfromST(segTable)
-        EM <- Mclust(simulLR, G=G)
+        EM <- Mclust(simulLR, G=G, prior = priorControl(scale = priorScale))
         nG <- EM$G
         m <- EM$parameters$mean
         p <- EM$parameters$pro

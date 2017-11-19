@@ -15,8 +15,8 @@ See \code{\link[mclust]{Mclust}}.
 }
 
 \usage{
-\S4method{EMnormalize}{rCGH}(object, G=2:6, peakThresh=0.5, mergeVal=0.1,
-            Title=NA, verbose=TRUE)
+\S4method{EMnormalize}{rCGH}(object, G = 2:6, priorScale = 5,
+    peakThresh = 0.5, mergeVal = 0.1, Title = NA, verbose = TRUE)
 }
 
 \arguments{
@@ -26,6 +26,10 @@ See \code{\link[mclust]{Mclust}}.
     \item{G}{
     : numeric. The number of groups to test during the gaussian mixture
     estimation. Default is from 2 to 6.
+    }
+    \item{priorScale}{
+    : numeric. A scale value passed to \code{\link[mclust]{priorControl}}.
+    Default is 5.
     }
     \item{peakThresh}{
     : numeric. The proportion of the highest peak to consider as a peak
@@ -46,7 +50,10 @@ See \code{\link[mclust]{Mclust}}.
 }
 \details{
 Depending on \code{peakThresh}, the mean of the highest density, or a lower
-value, will be chosen for centering the Log2Ratios before the segmentation.\cr
+value, is chosen for centering the genomic profile. To do so, L2R are modeled
+for each segment s_i, with respect to n_i (the number of probes included in
+segment i), mu_i and sd_i. The mixture of L2Rs is then analysed as a mixture of
+gaussian populations.\cr
 When a \code{peakThresh} value is specified, heights of density peaks are
 compared: the lowest peak mean among the peaks respecting the criteria: 
 \code{peakHeight > max(peaks)*peakThresh}, is chosen for centralizing the data.

@@ -72,10 +72,9 @@
 }
 \end{filecontents*}
 
-% Authors
-\author{Frederic Commo \footnote{frederic.commo@gustaveroussy.fr}\\
-    Inserm U981, Bioinformatics Group, Gustave Roussy, France
-    }
+% Package Authors
+\author{Frederic Commo\thanks{\email{fredcommo@gmail.com}}\\
+Inserm U981, Bioinformatics Group, Gustave Roussy, France}
 
 %BiocStyle settings
 <<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
