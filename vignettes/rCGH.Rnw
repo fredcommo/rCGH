@@ -60,7 +60,7 @@
     pages = {265--273},
     url = {http://www.statsci.org/smyth/pubs/normalize.pdf}
 }
-@misc{Affy,
+@online{Affy,
     url = {http://www.affymetrix.com/estore/partners_programs/programs/developer/tools/powertools.affx}
 }
 @Manual{dnacopy,
@@ -72,10 +72,6 @@
 }
 \end{filecontents*}
 
-% Package Authors
-\author{Frederic Commo\thanks{\email{fredcommo@gmail.com}}\\
-Inserm U981, Bioinformatics Group, Gustave Roussy, France}
-
 %BiocStyle settings
 <<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
 BiocStyle::latex()
@@ -85,6 +81,9 @@ BiocStyle::latex()
 \bioctitle[rCGH package]{
 Comprehensive Pipeline for Analyzing and Visualizing Array-Based CGH Data
 }
+
+% Package Authors
+\author{Frederic Commo\thanks{\email{fredcommo@gmail.com}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
@@ -218,7 +217,8 @@ information:  \emph{sampleName, labName}:
 
 <<readFiles, warning=FALSE, message=FALSE>>=
 library(rCGH)
-filePath <- system.file("extdata", "Affy_cytoScan.cyhd.CN5.CNCHP.txt.bz2",
+filePath <- system.file("extdata",
+    "Affy_cytoScan.cyhd.CN5.CNCHP.txt.bz2",
     package = "rCGH")
 cgh <- readAffyCytoScan(filePath, sampleName = "CSc-Example",
                         labName = "myLab")
@@ -331,7 +331,6 @@ The \Rfunction{plotDensity()} function gives access to a graphical check on how
 the centralization step worked, and what LRR population has been chosen for 
 centering the profile:
 
-\pagebreak
 
 <<EMnormalize>>=
 cgh <- EMnormalize(cgh)
@@ -383,7 +382,7 @@ function can be used to extract genes from any other segmentation table,
 provided this table is of the same format, and the genome build to use
 is specified (default setting is \emph{"hg19"}).
 
-\pagebreak
+\vspace{5mm}
 
 <<byGeneTable2>>=
 byGeneTable(segTable, "erbb2", genome = "hg19")[,1:6]
@@ -446,7 +445,7 @@ The \texttt{p} argument, which specifies the proportion of each plot within the
 layout, can be used to remove the 2nd and/or the 3rd plot from the output, e.g.
 \texttt{p = c(1/2, 0, 1/2)} would remove the profile by copy numbers.}
 
-\vspace{5mm}
+\pagebreak
 
 <<getProfile, fig.width=7.7, fig.height=9.5, fig.show='hide'>>=
 multiplot(cgh, symbol = c("egfr", "erbb2"))
@@ -576,10 +575,10 @@ please visit\\
 
 \section{Session information}
 <<session>>=
-toLatex(sessionInfo())
+sessionInfo()
 @
 
-
+\pagebreak
 
 \bibliography{rcgh}
 

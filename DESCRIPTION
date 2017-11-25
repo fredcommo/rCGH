@@ -2,8 +2,8 @@ Package: rCGH
 Type: Package
 Title: Comprehensive Pipeline for Analyzing and Visualizing Array-Based
         CGH Data
-Version: 1.9.1
-Date: 2017-10-15
+Version: 1.9.2
+Date: 2017-11-25
 Authors@R: c(person(given="Frederic", family="Commo", role=c("aut", "cre"), 
     email="fredcommo@gmail.com"))
 Maintainer: Frederic Commo <fredcommo@gmail.com>
@@ -22,7 +22,7 @@ Description: A comprehensive pipeline for analyzing and interactively
     Input files can be in compressed format, e.g. .bz2 or .gz.
 License: Artistic-2.0
 biocViews: aCGH,CopyNumberVariation,Preprocessing,FeatureExtraction
-Depends: R (>= 3.3),methods,stats,utils,graphics
+Depends: R (>= 3.4),methods,stats,utils,graphics
 Imports: plyr,DNAcopy,lattice,ggplot2,grid,shiny (>= 0.11.1),
         limma,affy,mclust,TxDb.Hsapiens.UCSC.hg18.knownGene,
         TxDb.Hsapiens.UCSC.hg19.knownGene,TxDb.Hsapiens.UCSC.hg38.knownGene,
