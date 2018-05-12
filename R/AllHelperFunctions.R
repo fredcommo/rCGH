@@ -702,6 +702,8 @@
 
     newSignal <- mclapply(ss, function(sss, G, alpha){
         n <- length(sss)
+        if(n < 50)
+            return(sss)
         l <- max(10, ceiling(n/alpha))
         idx <- round(seq(0, n, len=l))
         S <- lapply(2:length(idx), function(jj){
@@ -1188,20 +1190,34 @@
 ###############################################
 ## helpers called in plot functions
 ###############################################
+# .simulateLRfromST <-  function(st){
+#     lr <- lapply(1:nrow(st), function(ii){
+#         mu <- st$seg.mean[ii]
+#         s <- min(st$probes.Sd[ii]/5, .1)
+# #        s <- min(st$probes.Sd[ii]/15, .07)
+#         n <- round(st$num.mark[ii]/10)
+#         if(n>25){
+#             rnorm(n, mu, s)
+#         }
+#     })
+#     sort(do.call(c, lr))
+# }
+
 .simulateLRfromST <-  function(st){
+    st <- st[which(st$num.mark>25),]
     lr <- lapply(1:nrow(st), function(ii){
         mu <- st$seg.mean[ii]
         s <- min(st$probes.Sd[ii]/5, .1)
-#        s <- min(st$probes.Sd[ii]/15, .07)
-        n <- round(st$num.mark[ii]/10)
-        if(n>25){
-            rnorm(n, mu, s)
-        }
+        n <- max(25, round(st$num.mark[ii]/10))
+        return(rnorm(n, mu, s))
     })
     sort(do.call(c, lr))
 }
 
 .addDens <- function(x, m, s, p, best, ...){
+    x <- seq(min(x, na.rm = TRUE) - 1,
+        max(x, na.rm = TRUE) + 1,
+        len = 1000)
     d <- dnorm(x, m, s)
     lines(x, d*p, lwd=3, ...)
     polygon(x, d*p, ...)

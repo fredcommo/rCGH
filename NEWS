@@ -1,5 +1,10 @@
 R News
 
+rCGH 1.9.4
+-----------------------
+Minor changes
+    * Error on "Affy_snp6_cnchp.txt.bz2" demo file, fixed.
+
 
 rCGH 1.9.1
 -----------------------

@@ -39,7 +39,7 @@ setMethod(f="plotDensity",
                     ylim = range(0, max(h$density)*1.35),
                     xlab = expression(Log[2](Ratio)), main=Title, ...)
             for(ii in seq_len(nG)){
-                col <- rgb(ii/nG, 0.2, (nG-ii)/nG, ifelse(ii==best, .75, .25))
+                col <- rgb(ii/nG, 0.2, (nG-ii)/nG, ifelse(ii==best, .8, .2))
                 mu_i <- mu[ii]; s_i <- sqrt(s2[ii]); p_i <- p[ii]
                 .addDens(simulLR, mu_i, s_i, p_i, best = ii==best, col = col)
             }
